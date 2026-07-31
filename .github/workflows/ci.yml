@@ -1,0 +1,30 @@
+name: strict-c
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build and analysis tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev cppcheck clang-tidy
+      - name: Strict and sanitizer builds
+        run: |
+          make clean
+          make CC=${{ matrix.compiler }}
+          make CC=${{ matrix.compiler }} debug
+      - name: Static analysis
+        if: matrix.compiler == 'clang'
+        run: make analyze

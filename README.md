@@ -1,153 +1,180 @@
-# 🚨 SpoofFinder 🚨
+# IPHM Check
 
-**SpoofFinder** is a tool designed to check whether a target ASN (Autonomous System Number) supports IP header modification, commonly referred to as IP spoofing. The tool fetches and analyzes data from multiple sources, providing a comprehensive report on the spoofing status of a given ASN, IP address, or CIDR range.
+`iphm-check` reports historical CAIDA Spoofer measurements and can manage
+fresh, authorized measurements from explicitly configured network segments.
+It does not treat one old result as proof of an ASN's current policy, and it
+does not assume that every prefix or exit behaves identically.
 
-## ⚡️ Features
+The active mode delegates all measurement traffic to CAIDA's official
+`spoofer-prober`. This project does not implement or vendor spoofed-packet
+generation.
 
-- 🛡️ **ASN Spoofing Check**: Determines whether an ASN allows IP header modification (IPHM), indicating whether the ASN supports spoofed packet routing.
-- 📊 **Detailed ASN Information**: Retrieves detailed information about an ASN, including country, number of routed IPs, and last spoofing check.
-- 📧 **Email and Phone Parsing**: Extracts contact details (email, phone) from public ASN databases.
-- 🔍 **Related Links Search**: Performs search engine queries for related server information based on the ASN.
-- 🌈 **Rich CLI Output**: Utilizes `rich` for visually appealing, colorful logs and outputs.
+## Build
 
-## 🚀 Quick Run
-
-Follow these steps to quickly set up and run SpoofFinder:
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/MatrixTM/SpoofFinder.git
-   cd spoof-finder
-   ```
-
-2. **Install dependencies**:
-   Ensure you have Python 3.7+ installed. Then, run:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the tool**:
-   You can check the spoofing status of an ASN, IP, or CIDR range using the following command:
-   ```bash
-   python spoof_finder.py -t AS15169
-   ```
-
-4. **Interactive Mode**:
-   If you don't pass any arguments, SpoofFinder will prompt you to input a target interactively:
-   ```bash
-   python spoof_finder.py
-   ```
-
-## 🛠️ Requirements
-
-SpoofFinder depends on the following Python libraries:
+Ubuntu and Debian:
 
 ```bash
-pip install httpx netaddr rich aioconsole git+https://github.com/soxoj/async-search-scraper
+sudo apt update
+sudo apt install -y build-essential libcurl4-openssl-dev
+make
 ```
 
-## 🖥️ Usage
-
-SpoofFinder can be run from the command line, passing the target ASN, IP address, or CIDR range as an argument.
-
-### Example
-
-To check if ASN 15169 (Google) supports IP header modification:
+Strict checks:
 
 ```bash
-python spoof_finder.py -t AS15169
+make clean && make CC=gcc
+make clean && make CC=clang
+make clang-strict
+make debug
+make analyze
 ```
 
-You can also use an IP address or CIDR range to find the corresponding ASN and check its spoofing status:
+Install:
 
 ```bash
-python spoof_finder.py -t 8.8.8.8
+sudo make install
 ```
 
-### Input Types
+## Commands
 
-- **ASN**: Autonomous System Number (e.g., `AS15169` or just `15169`).
-- **IP Address**: Will resolve the IP to its corresponding ASN and check the spoofing status.
-- **CIDR Range**: Supports input of IP ranges in CIDR format (e.g., `8.8.8.0/24`).
-
-## 📄 Output Example
-
-Here is an example of the tool's output:
-
-```plaintext
-[21:23:25] 🔍 Fetching data for ASN: AS15169...                                
-[21:23:28] 🌍 ASN Name: GOOGLE                                                 
-           🔢 ASN Number: AS15169                                              
-           🌐 Site: google.com                                                 
-           🏆 ASN Rank: 1790                                                   
-           🛡️ Spoofable: No                                                     
-           🌍 Country: USA                                                     
-           🌐 Client IPv4: 35.194.140.0/24                                     
-           ⏱️ Last Checked: Dec 21 2017 08:40 AM                                
-           📧 Contact Email: network-abuse@google.com                          
-           📞 Contact Phone: +1-650-253-0000                                   
-[21:23:55] 🔗 Related Links:                                                   
-           - https://cloud.google.com/                                         
-           - https://console.cloud.google.com/                                 
-           - https://cloud.google.com/gcp/                                     
-           - https://cloud.google.com/compute/                                 
-           - https://www.google.com/about/datacenters/                         
-           - https://cloud.google.com/products/calculator                      
-           - https://cloud.google.com/hosting-options/                         
-           - https://www.google.com/about/datacenters/efficiency/              
-           - https://www.google.com/about/datacenters/locations/               
-           - https://en.wikipedia.org/wiki/Google_data_centers                 
-           - https://cloud.google.com/serverless/                              
-           - https://cloud.google.com/compute/vm-instance-pricing              
-           - https://www.google.com/about/datacenters/gallery/                 
-           - https://blog.google/products/google-cloud/introducing-google-cloud/ 
-           - https://www.google.com/                                           
-           - https://support.google.com/?hl=en                                 
-           - https://accounts.google.com/                                      
-           - https://about.google/intl/ALL_us/                                 
-           - https://www.google.com/advanced_search                            
-           - https://maps.google.com/                                          
-           - https://en.wikipedia.org/wiki/Google                              
-           - https://www.google.de/                                            
-           - https://www.google.es/                                            
-           - https://www.google.com.br/                                        
-           - https://www.google.ie/intl/en/                                    
-           - https://www.google.com.mx/                                        
-           - https://www.google.dk/index.html                                  
-           - https://www.google.com.tw/
+```text
+iphm-check TARGET [--json] [--timeout SECONDS]
+iphm-check -t TARGET [--json] [--timeout SECONDS]
+iphm-check inventory ASN [--json] [--timeout SECONDS]
+iphm-check audit ASN [--max-age DAYS] [--require-complete] [--json]
+sudo iphm-check measure --segment ID --authorized \
+    [--family 4|6|both] [--prober-timeout SECONDS] [--json]
 ```
 
-## 📝 About Data Sources
-SpoofFinder gathers ASN and IP spoofing data from multiple sources, including:
+The original target command remains a passive historical query. It accepts an
+ASN, IPv4 or IPv6 address, or CIDR. IP input is resolved through RISwhois and
+reports the matched BGP route.
 
-- [caida.org](https://caida.org): For information on ASN spoofing status.
-- [arin.net](https://arin.net): For obtaining contact information (email, phone) associated with ASNs.
-- [ipapi.co](https://ipapi.co): For IP geolocation and ASN details based on the target IP.
+`inventory` performs a RISwhois inverse-origin query and preserves IPv4,
+IPv6, overlapping routes, and multiple-origin routes.
 
+`audit` combines:
 
-## 📁 File Structure
+- The current RIS route inventory and source-RIB freshness.
+- Locally initiated, exact-session-reconciled active measurements.
+- Explicit segment/family requirements.
+- Historical public CAIDA results as context only.
 
-- `spoof_finder.py`: The main script that handles checking ASN spoofing status and gathering additional information.
-- `README.md`: This file, providing project documentation.
-- `requirements.txt`: A list of Python libraries and their versions required to run the tool.
-- `LICENSE`: The license information for the project.
+The default evidence window is 30 days. `--max-age` accepts 1 through 365.
+`--require-complete` returns exit status `8` unless every current route and
+every configured segment/family has fresh, unambiguous evidence.
 
-## 📝 License
+## Authorized active measurements
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Install CAIDA's official `spoofer-prober` 1.5.0 or a compatible later 1.x
+release from the official package or source:
 
-## 🤝 Contributing
+- [CAIDA Spoofer project](https://www.caida.org/projects/spoofer/)
+- [CAIDA Spoofer FAQ](https://www.caida.org/projects/spoofer/faq/)
 
-We welcome contributions! Feel free to open issues or submit pull requests. Please follow the repository's guidelines for code style and contributions.
+The executable must be a root-owned, non-writable regular file at
+`/usr/bin/spoofer-prober` or `/usr/local/bin/spoofer-prober`.
 
-## 🚧 Future Enhancements
+Disable any independent Spoofer scheduler before using managed measurements.
+This avoids duplicate sessions outside `iphm-check`'s local interval control.
 
-- ⚙️ Add more data sources to check spoofing capabilities.
-- 🗂️ Implement caching to reduce API call overhead for repeated queries.
-- 🔧 Improved error handling and log management.
+Create `/etc/iphm-check/segments.json` as a root-owned file that is not
+group- or world-writable:
 
-# 👨‍💻 Best Way to get a server
+```json
+{
+  "schema_version": 1,
+  "asn": 34927,
+  "minimum_interval_days": 7,
+  "segments": [
+    {
+      "id": "edge-ch-1",
+      "families": ["ipv4"],
+      "expected_prefixes": ["185.44.82.0/24"]
+    }
+  ]
+}
+```
 
-<a href="https://aeza.net/?ref=375036"><img src="https://github.com/user-attachments/assets/f875428b-cb35-442d-8dce-cdc5ead4ffbd" width="728" height="90"  alt="aeza"></a>
-##### For this subject, the best hosting I found is [Aeza](https://aeza.net/?ref=375036 "Aeza Hosting")
-##### You Can buy hourly 10Gbps & Ryzen 9 Servers with a cheap price
+```bash
+sudo chown root:root /etc/iphm-check/segments.json
+sudo chmod 0644 /etc/iphm-check/segments.json
+sudo iphm-check measure --segment edge-ch-1 --authorized
+```
+
+Active mode:
+
+- Requires root and an explicit `--authorized` acknowledgment.
+- Derives the ASN and permitted families only from the secure configuration.
+- Refuses arbitrary active ASN targets.
+- Runs the official client directly with anonymized public sharing enabled and
+  unanonymized remediation sharing disabled, equivalent to `-s1 -r0`.
+- Never disables TLS verification or selects development/custom servers.
+- Enforces the configured interval after CAIDA issues a session ID.
+- Captures bounded output and never stores or prints CAIDA's session key.
+
+Only run active mode from a network you own or for which you have explicit
+authorization. CAIDA states that meaningful source-address-validation testing
+requires a vantage inside or immediately upstream of the tested network.
+
+## Evidence and privacy
+
+The append-only ledger is
+`/var/lib/iphm-check/measurements.jsonl`. It is created root-owned with mode
+`0600`; symlinks and group/world-writable state are rejected.
+
+The ledger retains the exact server-observed egress address so later audits can
+detect BGP route changes. Normal plain and JSON output never includes that
+address. It exposes only the matched BGP route and CAIDA's public anonymized
+client prefix.
+
+Each active result is reconciled through CAIDA's exact `/sessions/{id}` API
+resource. ASN, family, timestamp, anonymized prefix, and raw statuses must
+agree. A newly completed session may remain `pending` while publication
+propagates. An unreconciled session older than 24 hours becomes a conflict and
+cannot satisfy coverage.
+
+CAIDA publicly masks IPv4 results to `/24` and IPv6 results to `/40`. The local
+server-observed address is therefore necessary to distinguish finer routes
+without disclosing it in normal output.
+
+## Verdicts
+
+- `spoofable`: at least one fresh validated path reports `received`.
+- `rewritten`: no fresh result is `received`, and at least one reports
+  `rewritten`.
+- `blocked`: all required routes and segments have complete fresh coverage and
+  every required result is `blocked`.
+- `inconclusive`: evidence is partial, stale, changed, conflicting,
+  unsupported, or affected by MOAS/routing-source ambiguity.
+- `no_data`: no usable active or historical measurement exists.
+
+“Fresh” means within the selected evidence window. “Complete” means the
+current RIS routes and operator-declared segments were sampled. Neither term
+proves every address, customer interface, internal path, or moment in time has
+the same policy.
+
+## Exit statuses
+
+- `0`: command completed, regardless of whether spoofing was observed.
+- `2`: invalid command line or target.
+- `3`: RIS resolution or route-inventory failure.
+- `4`: CAIDA transport, pagination, parsing, reconciliation, or output failure.
+- `5`: authorization, secure configuration, or trusted-prober failure.
+- `6`: prober version, execution, timeout, or output failure.
+- `7`: secure ledger loading or persistence failure.
+- `8`: `--require-complete` requested and coverage is incomplete.
+
+## Data sources and terms
+
+- [CAIDA Spoofer Data API](https://www.caida.org/projects/spoofer/data-api/)
+- [CAIDA Master Acceptable Use Agreement](https://www.caida.org/about/legal/aua/)
+- [CAIDA ASRank](https://asrank.caida.org/)
+- [RIPE RISwhois](https://ris.ripe.net/docs/ris-whois/)
+
+## License
+
+This repository remains under its existing MIT license. The external CAIDA
+Spoofer client is distributed separately under its own license and is not
+vendored or linked into `iphm-check`. Vendored component notices are in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

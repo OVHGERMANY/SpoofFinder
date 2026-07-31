@@ -1,5 +1,0 @@
-httpx~=0.27.2
-aioconsole~=0.8.0
-netaddr~=1.3.0
-rich~=13.9.2
-git+https://github.com/soxoj/async-search-scraper
